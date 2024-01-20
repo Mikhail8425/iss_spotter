@@ -29,19 +29,20 @@ const fetchMyIP = function(callback) {
 }
 
 const fetchCoordsByIP = (ip, callback) => {
-  request.get(`https://freegeoip.app/json/${ip}`, (err, response, body) => {
-    // If error, print it out
-    if (err) {
-      callback(err, null);
-    } else if (response.statusCode !== 200) {
-      // If there was a non-success response code, log it and throw an error
+  request.get(`http://ipwho.is/${ip}`, (error, response, body) => {
+    // If error, index.js print error
+    if (error) {
+      callback(error, null);
+      return;
+    }
+    if (response.statusCode !== 200) {
+      // If not successful, return error, index.js to print error
       const responseCodeError = handleStatusCode(response.statusCode, "fetching coordinates", body);
       callback(responseCodeError, null);
-    } else {
+    } 
       //Otherwise we should have coordinates! We only want lat and long.
-      const { latitude, longitude } = JSON.parse(body);
-      callback(null, { latitude, longitude });
-    }
+    const { latitude, longitude } = JSON.parse(body);
+    callback(null, { latitude, longitude });
   });
 };
 
