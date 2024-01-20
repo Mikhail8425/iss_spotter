@@ -11,12 +11,11 @@ const request = require('request');
 
 const fetchMyIP = function(callback) { 
   // use request to fetch IP address from JSON API
-  request('https://api.ipify.org?format=json', (error, response, body) => {
+  request.get('https://api.ipify.org?format=json', (error, response, body) => {
     if (error) {
       callback(error, null);
       return;
     }
-    // if non-200 status, assume server error
     if (response.statusCode !== 200) {
       const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${body}`;
       callback(Error(msg), null);
@@ -37,8 +36,8 @@ const fetchCoordsByIP = (ip, callback) => {
     }
     if (response.statusCode !== 200) {
       // If not successful, return error, index.js to print error
-      const responseCodeError = handleStatusCode(response.statusCode, "fetching coordinates", body);
-      callback(responseCodeError, null);
+      const msg = `Status Code ${response.statusCode} when fetching IP. Response: ${body}`;
+      callback(Error(msg), null);
     } 
       //Otherwise we should have coordinates! We only want lat and long.
     const { latitude, longitude } = JSON.parse(body);
@@ -46,5 +45,21 @@ const fetchCoordsByIP = (ip, callback) => {
   });
 };
 
-module.exports = { fetchMyIP, fetchCoordsByIP };
+const fetchISSFlyOverTimes = function(coords, callback) {
+  request.get(`https://iss-flyover.herokuapp.com/json/?lat=${coords.latitude}&lon=${coords.longitude}`, (error, response, body) => {
+    if (error) {
+      callback(error, null);
+      return;
+    }
+    if (response.statusCode !== 200) {
+      const msg = `Status Code ${response.statusCode} when fetching coordinates. Response: ${body}`;
+      callback(Error(msg), null);
+      return;
+    }
+    const ISSflyoverTimes = JSON.parse(body).response;
+    callback(null, ISSflyoverTimes);
+  })
+};
+
+module.exports = { fetchMyIP, fetchCoordsByIP, fetchISSFlyOverTimes };
 
